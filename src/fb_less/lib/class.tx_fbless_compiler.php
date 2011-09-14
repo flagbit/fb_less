@@ -84,8 +84,7 @@ class tx_fbless_compiler {
 	protected function getCssFilename($lessFilename) {
 		$hash = $this->getHashFromFileContents($lessFilename);
 		$lessFileInfo = t3lib_div::split_fileref($lessFilename);
-		$filebody = substr($lessFileInfo['filebody'], 0, -4);
-		return $this->tempPath.$filebody.'_'.$hash.'.css';
+		return $this->tempPath.$lessFileInfo['filebody'].'_'.$hash.'.css';
 	}
 
 
