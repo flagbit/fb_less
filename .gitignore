@@ -1,1 +1,6 @@
 .project
+local.cache.properties
+.externalToolBuilders
+.settings
+build.properties
+build.xml
