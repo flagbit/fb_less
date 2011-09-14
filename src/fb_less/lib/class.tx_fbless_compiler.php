@@ -82,20 +82,24 @@ class tx_fbless_compiler {
 	 * @return String the filename for the compiled css file
 	 */
 	protected function getCssFilename($lessFilename) {
-		$hash = $this->getHashFromFileContents($lessFilename);
 		$lessFileInfo = t3lib_div::split_fileref($lessFilename);
-		return $this->tempPath.$lessFileInfo['filebody'].'_'.$hash.'.css';
+		return $this->tempPath.$lessFileInfo['filebody'].'.css';
 	}
-
-
+	
+	
 	/**
-	 * Helper function to generate the filename hash for correct caching
+	 * Replaces a key inside an array
 	 * 
-	 * @param String $filename
-	 * @return String part of a md5 hash
+	 * @param array $array
+	 * @param String $oldKey
+	 * @param String $newKey
 	 */
-	protected function getHashFromFileContents($filename) {
-		return md5(file_get_contents($filename));
+	public function replaceKey($array, $oldKey, $newKey) {
+		$newArray = array();
+		foreach ($array as $key => $value) {
+			$newArray[$key === $oldKey ? $newKey : $key] = $value;
+		}
+		return $newArray;
 	}
 
 
@@ -109,19 +113,22 @@ class tx_fbless_compiler {
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['fb_less']);
 		
 		foreach ($params['cssFiles'] as $key => $includeFile) {
-			if ($this->isLessFile($includeFile['file'])) {
-				$cssFilename = $this->getCssFilename($includeFile['file']);
+			
+				//TYPO3 4.5 compability
+			if (t3lib_div::compat_version('4.6')) {
+				$filename = $includeFile['file'];
+			} else {
+				$filename = $key;
+			}
+			
+			if ($this->isLessFile($filename)) {
+				$cssFilename = $this->getCssFilename($filename);
 				
 					//check if we need to compile less file
-				if (!file_exists($cssFilename)) {
-					$lessCompiler = t3lib_div::makeInstance('tx_fbless_lessc', $includeFile['file']);
+				if (!file_exists($cssFilename) || $GLOBALS['TSFE']->no_cache) {
+					$lessCompiler = t3lib_div::makeInstance('tx_fbless_lessc', $filename);
 					$cssFileContents = $lessCompiler->parse();
-
-					try {
-						file_put_contents($cssFilename, $cssFileContents);
-					} catch (exception $e) {
-						$e->getMessage();
-					}
+					t3lib_div::writeFile($cssFilename, $cssFileContents);
 				}
 
 					//compression if compression is enabled
@@ -129,7 +136,12 @@ class tx_fbless_compiler {
 					$cssFilename = $this->getCompressor()->compressCssFile($cssFilename);
 				}
 				
-				$params['cssFiles'][$key]['file'] = $cssFilename;
+					//TYPO3 4.5 compability
+				if (t3lib_div::compat_version('4.6')) {
+					$params['cssFiles'][$key]['file'] = $cssFilename;
+				} else {
+					$params['cssFiles'] = $this->replaceKey($params['cssFiles'], $filename, $cssFilename);
+				}
 			}
 		}
 	}
