@@ -1,6 +1,11 @@
 .project
-local.cache.properties
+*.cache.properties
 .externalToolBuilders
 .settings
 build.properties
 build.xml
+/.buildpath
+.DS_Store
+*.cache.properties
+*~
+*.swp
