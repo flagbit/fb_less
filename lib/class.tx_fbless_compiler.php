@@ -3,7 +3,7 @@
  *  Copyright notice
  *
  *  (c) 2011 Frederic Gaus <gaus@flagbit.de>, Flagbit GmbH & Co. KG
- *  
+ *
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -52,12 +52,12 @@ class tx_fbless_compiler {
 		}
 		return $this->compressor;
 	}
-	
+
 
 	/**
 	 * Checks weather compiled css files should be compressed
-	 * 
-	 * @return bool  
+	 *
+	 * @return bool
 	 */
 	protected function isCompressionEnabled() {
 		return ! empty($this->extConf['compression']);
@@ -66,9 +66,9 @@ class tx_fbless_compiler {
 
 	/**
 	 * Checks weather file is a less file. Less-Files must end on .less
-	 * 
+	 *
 	 * @param String $filename
-	 * @return bool true if file is a less file 
+	 * @return bool true if file is a less file
 	 */
 	protected function isLessFile($filename) {
 		return preg_match('#\.less$#i', $filename);
@@ -77,7 +77,7 @@ class tx_fbless_compiler {
 
 	/**
 	 * Generates the cached filename inside typo3temp-dir.
-	 * 
+	 *
 	 * @param String $lessFilename the filename of the less file
 	 * @return String the filename for the compiled css file
 	 */
@@ -85,11 +85,11 @@ class tx_fbless_compiler {
 		$lessFileInfo = t3lib_div::split_fileref($lessFilename);
 		return $this->tempPath.$lessFileInfo['filebody'].'.css';
 	}
-	
-	
+
+
 	/**
 	 * Replaces a key inside an array
-	 * 
+	 *
 	 * @param array $array
 	 * @param String $oldKey
 	 * @param String $newKey
@@ -104,26 +104,26 @@ class tx_fbless_compiler {
 
 
 	/**
-	 * Compile Function 
-	 * 
+	 * Compile Function
+	 *
 	 * @param array $params
 	 * @param object $pObj
 	 */
 	public function compile(&$params, &$pObj) {
 		$this->extConf = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['fb_less']);
-		
+
 		foreach ($params['cssFiles'] as $key => $includeFile) {
-			
+
 				//TYPO3 4.5 compability
 			if (t3lib_div::compat_version('4.6')) {
 				$filename = $includeFile['file'];
 			} else {
 				$filename = $key;
 			}
-			
+
 			if ($this->isLessFile($filename)) {
 				$cssFilename = $this->getCssFilename($filename);
-				
+
 					//check if we need to compile less file
 				if (!file_exists($cssFilename) || $GLOBALS['TSFE']->no_cache) {
 					$lessCompiler = t3lib_div::makeInstance('tx_fbless_lessc', $filename);
@@ -135,7 +135,7 @@ class tx_fbless_compiler {
 				if ($this->isCompressionEnabled()) {
 					$cssFilename = $this->getCompressor()->compressCssFile($cssFilename);
 				}
-				
+
 					//TYPO3 4.5 compability
 				if (t3lib_div::compat_version('4.6')) {
 					$params['cssFiles'][$key]['file'] = $cssFilename;
